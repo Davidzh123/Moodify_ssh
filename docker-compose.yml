@@ -1,13 +1,15 @@
+version: '3.8'
+
 services:
   laravel_app:
     container_name: laravel_app
     build:
       context: ./david_project
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     env_file:
-      - "./david_project/.env"
+      - ./david_project/.env
     volumes:
-      - ./david_project/:/var/www/
+      - ./david_project:/var/www
     ports:
       - "8000:8000"
     networks:
@@ -15,17 +17,22 @@ services:
     depends_on:
       - db
       - fastapi
+    # Au démarrage, on installe les dépendances PHP puis on lance artisan
+    command: >
+      sh -c "composer install --no-dev --optimize-autoloader --no-interaction &&
+             php artisan migrate --force &&
+             php artisan serve --host=0.0.0.0 --port=8000"
 
   db:
     image: mariadb:latest
     container_name: database
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE:    ${MYSQL_DATABASE}
+      MYSQL_USER:        ${MYSQL_USER}
+      MYSQL_PASSWORD:    ${MYSQL_PASSWORD}
     ports:
-      - "3306:${DB_PORT}"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - data:/var/lib/mysql
     networks:
@@ -35,18 +42,15 @@ services:
     container_name: fastapi
     build:
       context: ./python
-      dockerfile : Dockerfile
-      
+      dockerfile: Dockerfile
+    env_file:
+      - ./python/.env
     volumes:
-      - ./python/:/app/
+      - ./python:/app
     ports:
       - "8001:8001"
     networks:
-    - laravel_network
-
-
-
-
+      - laravel_network
 
 networks:
   laravel_network:
