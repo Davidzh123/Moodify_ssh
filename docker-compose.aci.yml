@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mariadb:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  fastapi:
+    image: acrmoodify.azurecr.io/fastapi:latest
+      
+    ports:
+      - "8001:8001"
+
+  laravel_app:
+    image: acrmoodify.azurecr.io/laravel-app:latest
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - FASTAPI_URL=http://fastapi:8001
+    ports:
+      - "8000:8000"

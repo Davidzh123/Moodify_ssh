@@ -1,0 +1,37 @@
+FROM php:8.4-fpm-alpine
+
+# Installer les extensions nécessaires
+RUN apk add --no-cache \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    curl \
+    bash \
+    shadow \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
+
+# Installer Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Définir le dossier de travail
+WORKDIR /var/www
+
+# Copier le code
+COPY . .
+
+# Donne les bons droits à www-data
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Utiliser www-data pour éviter les problèmes de droits avec les volumes
+USER www-data
+
+# Exposer le port du serveur Laravel
+EXPOSE 8000
+
+# Lancer le serveur Laravel
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
