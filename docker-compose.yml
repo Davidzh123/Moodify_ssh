@@ -4,7 +4,6 @@ services:
     build:
       context: ./david_project
       dockerfile: dockerfile
-    user: 1000:1000
     env_file:
       - "./david_project/.env"
     volumes:
@@ -37,7 +36,7 @@ services:
     build:
       context: ./python
       dockerfile : Dockerfile
-              # si tu utilises un .env local pour config Python
+      
     volumes:
       - ./python/:/app/
     ports:
